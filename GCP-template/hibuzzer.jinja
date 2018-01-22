@@ -1,0 +1,262 @@
+# Copyright 2015 Google Inc. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+{% set namePrefix = env["deployment"] %}
+{% set serverName = "mongodb" %}
+{% set arbiterName = "arbiter" %}
+{% set zone = properties["zone"] %}
+{% set numReplicas = properties["numReplicas"] %}
+{% set machineType = properties["machineType"] %}
+{% set dataDiskType = properties["dataDiskType"] %}
+{% set dataDiskSizeGb = properties["dataDiskSizeGb"] %}
+{% set numArbiters = properties["numArbiters"] %}
+{% set arbMachineType = properties["arbMachineType"] %}
+{% set solrMachineType = properties["solrMachineType"] %}
+{% set tomcatMachineType = properties["tomcatMachineType"] %}
+{% set managerMachineType = properties["managerMachineType"] %}
+{% set network = properties["network"] %}
+{% set dataDiskSuffix = "data" %}
+{% set replicaSetName = properties["replicaSetName"] %}
+
+{% macro hostname(prefix, id) -%}
+  {{ "%s-%s-%d"|format(namePrefix, prefix, id) }}
+{%- endmacro %}
+
+{% macro hostnames() -%}
+  {% for instance in range(1, numReplicas + 1) -%}
+    {{ hostname(serverName, instance) + '|' }}
+  {%- endfor %}
+{%- endmacro %}
+
+{% macro arbiter_hostnames() -%}
+  {% for instance in range(1, numArbiters + 1) -%}
+    {{ hostname(arbiterName, instance) + '|' }}
+  {%- endfor %}
+{%- endmacro %}
+
+resources:
+- type: vm_multiple_instances.py
+  name: {{ namePrefix}}-{{ serverName }}
+  properties:
+    zone: {{ zone }}
+    instanceName: {{ namePrefix }}-{{ serverName }}
+    machineType: {{ machineType }}
+    network: {{ network }}
+    numberOfVMReplicas: {{ numReplicas }}
+    sourceImage: "https://www.googleapis.com/compute/v1/projects/click-to-deploy-images/global/images/mongodb-3-4-debian-8-jessie-20170822-101032"
+    canIpForward: true
+    bootDiskType: pd-standard
+    disks:
+      - deviceName: {{ dataDiskSuffix }}
+        type: PERSISTENT
+        diskType: {{ dataDiskType }}
+        diskSizeGb: {{ dataDiskSizeGb }}
+        boot: False
+        autoDelete: True
+
+    tags:
+      items:
+      - "mongodb"
+      - "mongodb-db"
+      - "cluster-deployed-from-google-developer-console"
+
+    metadata:
+      items:
+      - key: startup-script
+        value: "/opt/c2d/startup-script.sh"
+      - key: ISMONGODBSERV
+        value: "True"
+      - key: ISMONGODBARB
+        value: "False"
+      - key: MONGO_REPLICASET_NAME
+        value: "{{ replicaSetName|string }}"
+      - key: MONGODB_SERVERS
+        value: "{{ hostnames() | trim }}"
+      - key: MONGODB_ARBITERS
+        value: "{{ arbiter_hostnames() | trim }}"
+      - key: ENV_DEPLOY_INSTALL_TEMP
+        value: /tmp/mongo
+
+{% if numArbiters > 0 %}
+- type: vm_multiple_instances.py
+  name: {{ namePrefix }}-{{ arbiterName }}
+  properties:
+    zone: {{ zone }}
+    instanceName: {{ namePrefix }}-{{ arbiterName }}
+    machineType: {{ arbMachineType }}
+    network: {{ network }}
+    numberOfVMReplicas: {{ numArbiters }}
+    sourceImage: "https://www.googleapis.com/compute/v1/projects/click-to-deploy-images/global/images/mongodb-3-4-debian-8-jessie-20170807-151315"
+    canIpForward: true
+    bootDiskType: pd-standard
+
+    tags:
+      items:
+      - "mongodb"
+      - "mongodb-db"
+
+    metadata:
+      items:
+      - key: startup-script
+        value: "/opt/c2d/startup-script.sh"
+      - key: ISMONGODBSERV
+        value: "False"
+      - key: ISMONGODBARB
+        value: "True"
+      - key: MONGO_REPLICASET_NAME
+        value: "{{ replicaSetName|string }}"
+      - key: MONGODB_SERVERS
+        value: "{{ hostnames() | trim }}"
+      - key: MONGODB_ARBITERS
+        value: "{{ arbiter_hostnames() | trim }}"
+      - key: ENV_DEPLOY_INSTALL_TEMP
+        value: /tmp/mongo
+{% endif %}
+
+- name: {{ namePrefix }}-solr
+  type: vm_instance.py
+  properties:
+    zone: {{ zone }}
+    instanceName: {{ namePrefix }}-solr
+    sourceImage: solr
+    machineType: {{ solrMachineType }}
+    network: {{ network }}
+    bootDiskType: pd-standard
+    bootDiskSizeGb: 500
+    tags:
+      items:
+        - solr
+        - hibuzzer-ssh
+        - hibuzzer
+    metadata:
+      items:
+        - key: startup-script
+          value: "/opt/startup.sh"
+        - key: SOLR
+          value: {{ namePrefix }}-solr
+
+
+- name: {{ namePrefix }}-manager-vm
+  type: vm_instance.py
+  properties:
+    zone: {{ zone }}
+    instanceName: {{ namePrefix }}-manager
+    sourceImage: manager-image
+    machineType: {{ managerMachineType }}
+    network: {{ network }}
+    bootDiskType: pd-standard
+    bootDiskSizeGb: 500
+    tags:
+      items:
+        - manager
+        - http-server
+        - https-servers
+        - hibuzzer-ssh
+        - hibuzzer
+    metadata:
+      items:
+        - key: startup-script
+          value: "/opt/startup.sh"
+        - key: MANAGER
+          value: {{ namePrefix }}-manager
+        - key: TOMCAT
+          value: {{ namePrefix }}-tomcat
+        - key: HIBUZZER_PASSWORD
+          value: "$(ref.hibuzzer-password.password)"
+
+
+- name: {{ namePrefix }}-tomcat
+  type: vm_instance.py
+  properties:
+    zone: {{ zone }}
+    instanceName: {{ namePrefix }}-tomcat
+    sourceImage: tomcat
+    machineType: {{ tomcatMachineType }}
+    network: {{ network }}
+    bootDiskType: pd-standard
+    bootDiskSizeGb: 100
+    tags:
+      items:
+        - tomcat
+        - hibuzzer-ssh
+        - hibuzzer
+    metadata:
+      items:
+        - key: startup-script
+          value: "/opt/startup.sh"
+        - key: MANAGER
+          value: {{ namePrefix }}-manager
+        - key: SOLR
+          value: {{ namePrefix }}-solr
+        - key: MONGODB_SERVERS
+          value: "{{ hostnames() | trim }}"
+        - key: HIBUZZER_PASSWORD
+          value: "$(ref.hibuzzer-password.password)"
+
+- name: hibuzzer-ssh
+  type: compute.v1.firewall
+  properties:
+    network: $(ref.{{ namePrefix }}-manager.networkInterfaces[0].network)
+    sourceRanges: ["0.0.0.0/0"]
+    targetTags: ["hibuzzer-ssh"]
+    allowed:
+      - IPProtocol: TCP
+        ports: ["22"]
+
+
+- name: allow-tcp-27017
+  type: compute.v1.firewall
+  properties:
+    network: $(ref.{{ namePrefix }}-manager.networkInterfaces[0].network)
+    sourceRanges: ["0.0.0.0/0"]
+    targetTags: ["mongodb"]
+    allowed:
+      - IPProtocol: TCP
+        ports: ["27017"]
+
+- type: compute.v1.firewall
+  name: mongodb-port-22
+  properties:
+    network: $(ref.{{ namePrefix }}-manager.networkInterfaces[0].network)
+    targetTags: ["mongodb"]
+    sourceTags: ["hibuzzer"]
+    allowed:
+      - IPProtocol: TCP
+        ports: ["22"]
+
+- type: compute.v1.firewall
+  name: mongodb-port-27017
+  properties:
+    network: $(ref.{{ namePrefix }}-manager.networkInterfaces[0].network)
+    targetTags: ["mongodb"]
+    sourceTags: ["hibuzzer"]
+    allowed:
+      - IPProtocol: TCP
+        ports: ["27017"]
+
+- name: hibuzzer-password
+  type: password.py
+  properties:
+    length: 14
+    includeSymbols: True
+
+outputs:
+  - name: vmInternalIP
+    value: "$(ref.{{ namePrefix }}-manager.selfLink)"
+  - name: initialPrimarySelfLink
+    value: "$(ref.{{ hostname(serverName, 1) }}.selfLink)"
+  - name: LoginPassword
+    value: "$(ref.hibuzzer-password.password)"
+  - name: x-status-type
+    value: c2d

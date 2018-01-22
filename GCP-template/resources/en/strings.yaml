@@ -1,0 +1,20 @@
+# Copyright 2015 Google Inc. All Rights Reserved.
+# Set of strings used in display metadata.
+# go/dm-display-metadata
+title: Hibuzzer
+author: ListenOn
+solutionVersion: v0_0_1
+shortDesc: Social Analytics Platform
+mongoOnGceOverview: MongoDB on Google Compute Engine overview
+c2dMongoDoc: Click to Deploy MongoDB documentation
+mongoVersion: 2.6.6
+mongoLicense: AGPL v3
+serverSection: Hibuzzer nodes
+serverSectionDesc: This section contains input properties related to MongoDB Server nodes.
+arbiterSection: MongoDB Arbiter nodes
+arbiterSectionDesc: This section contains input properties related to MongoDB Arbiter nodes.
+zone: Zone
+zonePlaceholder: us-central1-f
+zoneDesc: The Compute Engine zone for the Hibuzzer environment.
+mongoUrl: https://www.mongodb.org/
+mongoLicenseUrl: http://www.gnu.org/licenses/agpl-3.0.html

@@ -1,0 +1,49 @@
+{
+  "solution": {
+    "active": true,
+    "marketingInfo": {
+      "categoryIds": [
+        "BIGDATA"
+      ],
+      "license_urls": [
+        {
+          "description": "ListenOn",
+          "title": "ListenOn",
+          "url": "http://www.fsf.org/licensing/licenses/agpl-3.0.html"
+        },
+        {
+          "description": "MongoDB supported drivers",
+          "title": "MongoDB supported drivers",
+          "url": "http://www.apache.org/licenses/LICENSE-2.0"
+        }
+      ]
+    },
+    "partnerId": "hkmci.com",
+    "solutionId": "hibuzzer-product",
+    "solutionPublishedName": "hkmci.com/hibuzzer-product",
+    "solutionType": "PACKAGED_DEPLOYMENT"
+  },
+  "solution_default_price": {
+    "description": "ListenOn is a Social Media Analytics Platform.",
+    "entries": [
+      {
+        "monthlyPriceDiscountInMicros": 1750000,
+        "monthlyPriceInMicros": 4490000,
+        "title": "VM Instance: f1-micro + 10GB Boot Disk"
+      },
+      {
+        "monthlyPriceDiscountInMicros": 110120000,
+        "monthlyPriceInMicros": 257760000,
+        "title": "2 x VM Instance: n1-highmem-4 + 10GB Boot Disk"
+      },
+      {
+        "monthlyPriceDiscountInMicros": 0,
+        "monthlyPriceInMicros": 80000000,
+        "title": "2 x Standard Persistent Disk: 1000GB"
+      }
+    ]
+  },
+  "solution_software_price_description": {
+    "entries": []
+  }
+}

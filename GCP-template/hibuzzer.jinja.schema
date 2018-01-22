@@ -1,0 +1,121 @@
+imports:
+- name: vm_multiple_instances.py
+  path: common/vm_multiple_instances.py
+- name: path_utils.jinja
+  path: common/path_utils.jinja
+- name: common.py
+  path: common/common.py
+- name: default.py
+  path: common/default.py
+- name: vm_instance.py
+  path: common/vm_instance.py
+
+info:
+  version: dmv2
+  title: Hibuzzer Click To Deploy
+
+required:
+  - zone
+  - numReplicas
+  - machineType
+  - dataDiskType
+  - dataDiskSizeGb
+  - numArbiters
+  - arbMachineType
+  - replicaSetName
+  - network
+  - solrMachineType
+  - tomcatMachineType
+  - managerMachineType
+
+properties:
+  # Root properties.
+  zone:
+    type: string
+    default: us-central1-f
+    x-googleProperty:
+      type: GCE_ZONE
+  replicaSetName:
+    type: string
+    default: rs0
+  network:
+    type: string
+    x-googleProperty:
+      type: GCE_NETWORK
+
+  # Server properties
+  numReplicas:
+    type: integer
+    default: 2
+    enum:
+      - 1
+      - 2
+  machineType:
+    type: string
+    default: n1-highmem-4
+    x-googleProperty:
+      type: GCE_MACHINE_TYPE
+      zoneProperty: zone
+      gceMachineType:
+        minCpu: 1
+        minRamGb: 3.749
+  dataDiskType:
+    type: string
+    default: pd-standard
+    x-googleProperty:
+      type: GCE_DISK_TYPE
+      zoneProperty: zone
+  dataDiskSizeGb:
+    type: integer
+    default: 200
+    x-googleProperty:
+      type: GCE_DISK_SIZE
+      gceDiskSize:
+        diskTypeProperty: dataDiskType
+
+  # Arbiter properties
+  numArbiters:
+    type: integer
+    default: 1
+    enum:
+      - 0
+      - 1
+  arbMachineType:
+    type: string
+    default: f1-micro
+    x-googleProperty:
+      type: GCE_MACHINE_TYPE
+      zoneProperty: zone
+
+  # solr properties
+  solrMachineType:
+    type: string
+    default: n1-highmem-4
+    x-googleProperty:
+      type: GCE_MACHINE_TYPE
+      zoneProperty: zone
+      gceMachineType:
+        minCpu: 1
+        minRamGb: 3.749
+
+  tomcatMachineType:
+    type: string
+    default: n1-highmem-4
+    x-googleProperty:
+      type: GCE_MACHINE_TYPE
+      zoneProperty: zone
+      gceMachineType:
+        minCpu: 2
+        minRamGb: 7.4990234375
+
+
+
+  managerMachineType:
+    type: string
+    default: n1-highmem-4
+    x-googleProperty:
+      type: GCE_MACHINE_TYPE
+      zoneProperty: zone
+      gceMachineType:
+        minCpu: 1
+        minRamGb: 3.749

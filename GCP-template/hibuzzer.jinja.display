@@ -1,0 +1,148 @@
+metadataVersion: v1test
+description:
+  title: ListenOn
+  version: 1.0.2
+  url: http://hunt.social/listenon
+  tagline: An online social media analytics platform
+  logo: '@media/hibuzzer_logo.png'
+  architectureDescription: ListenOn will be deployed in a cluster of
+      Compute Engine instances. Each instance will use a boot disk and separate disk for storage.
+  author:
+    title: ListenOn Click to Deploy
+  documentations:
+    - title: ListenOn documentation
+      url: http://hunt.social/listenon/listen-on-launcher
+      description: Documentation for ListenOn
+      destinations:
+        - DESTINATION_SOLUTION_DETAILS
+        - DESTINATION_CONFIGURATION
+        - DESTINATION_POST_DEPLOY
+
+  softwareGroups:
+    - type: SOFTWARE_GROUP_OS
+      software:
+        - title: Ubuntu 16.04
+    - software:
+        - title: MongoDB server
+          version: 3.2.4
+          url: https://www.mongodb.org
+          licenseTitle: AGPL v3
+          licenseUrl: http://www.gnu.org/licenses/agpl-3.0.html
+
+        - title: Solr
+          version: 6.6
+          url: http://lucene.apache.org/solr/
+          licenseTitle: Apache License 2.0
+          licenseUrl: http://apache.org/licenses/LICENSE-2.0
+
+        - title: Tomcat
+          version: 8.0.46
+          url: http://tomcat.apache.org/
+          licenseTitle: Apache License 2.0
+          licenseUrl: http://apache.org/licenses/LICENSE-2.0
+
+        - title: Redis
+          version: 3.2.10
+          url: https://redis.io
+          licenseTitle: Three clause BSD
+          licenseUrl: https://redis.io/topics/license
+
+        - title: Nodejs
+          version: 6.11.2
+          url: https://nodejs.org
+          licenseTitle: MIT
+          licenseUrl: https://github.com/nodejs/node/blob/master/LICENSE
+
+input:
+  sections:
+    - name: server
+      title: MongoDB Server nodes
+      tooltip: This section contains input properties related to MongoDB Server nodes.
+    - name: arbiter
+      title: MongoDB Arbiter nodes
+      tooltip: This section contains input properties related to MongoDB Arbiter nodes.
+    - name: solr
+      title: Solr
+      tooltip: This section contains input properties related to solr.
+    - name: tomcat
+      title: Tomcat
+      tooltip: This section contains input properties related to tomcat.
+    - name: manager
+      title: Manager
+      tooltip: This section contains input properties related to manager.
+  properties:
+    # Root section.
+    - name: zone
+      title: Zone
+      tooltip: The zone determines what computing resources are available and where your data is stored and used. <a href="https://cloud.google.com/compute/docs/zones">Learn more</a>
+    - name: replicaSetName
+      title: Replica set name
+      tooltip: The replica set name for the MongoDB cluster.
+      level: 1
+    - name: network
+      title: Network name
+      tooltip: The name of a Compute Engine Network that each node in the cluster will belong to.
+      level: 1
+
+    # Server section.
+    - name: numReplicas
+      title: Node count
+
+      subtext: Select an odd number or add one Abriber below.
+      tooltip: Number of MongoDB data server nodes in the cluster.
+      section: server
+    - name: machineType
+      title: Machine type
+      tooltip: The machine type determines the CPU and memory your instance will have. <a href="https://cloud.google.com/compute/docs/machine-types">Learn more</a>
+      section: server
+    - name: dataDiskType
+      title: Data disk type
+      tooltip: Disk type for storage of MongoDB data and log files. Storage space is much less expensive for a standard persistent disk. An SSD persistent disk is better for random IOPS or streaming throughput with low latency. <a href="https://cloud.google.com/compute/docs/disks/#overview_of_disk_types">Learn more</a>
+      section: server
+    - name: dataDiskSizeGb
+      title: Disk size in GB
+      tooltip: Persistent disk performance is tied to the size of the persistent disk volume. You are charged for the actual amount of provisioned disk space. <a href="https://cloud.google.com/compute/pricing#disk">Learn more</a>
+      section: server
+
+    # Arbiter section.
+    - name: numArbiters
+      title: Arbiter count
+      subtext: Add an arbiter to create an odd number of total nodes.
+      tooltip: Number of MongoDB arbiter nodes in the cluster.
+      section: arbiter
+    - name: arbMachineType
+      title: Machine type
+      section: arbiter
+    - name: solrMachineType
+      title: Machine type
+      section: solr
+    - name: tomcatMachineType
+      title: Machine type
+      section: tomcat
+    - name: managerMachineType
+      title: Machine type
+      section: manager
+
+runtime:
+  deployingMessage: Deployment can take 3-10 minutes to complete, depending on
+      the size of your cluster.
+  primaryButton:
+    label: Visit ListenOn site
+    type: TYPE_URL
+    action: 'http://{{ externalIp(outputs().vmInternalIP)}}/bigdata/socialmedia/portal/login'
+  applicationTable:
+    rows:
+      - label: Site address
+        value: <a href="http://{{ externalIp(outputs().vmInternalIP)}}/bigdata/socialmedia/portal/login">http://{{ externalIp(outputs().vmInternalIP)}}/bigdata/socialmedia/portal/login</a>
+      - label: Zone
+        value: '{{ properties().zone }}'
+      - label: Login account
+        value: Super admin
+      - label: Login password
+        value: '{{ outputs().LoginPassword }}'
+  suggestedActions:
+    - heading: Connect to ListenOn Platform
+      description: 'Use the <a href="http://{{ externalIp(outputs().vmInternalIP)}}/bigdata/socialmedia/portal/login">link</a> to open ListenOn platform, If you cannot login the App, please wait for 2 minutes'
+      showIf: '{{ properties().hibuzzer }}'
+    - heading: Learn about ListenOn
+      description: '<a href="http://hunt.social/listenon">Socail Hunter</a>provides information for ListenOn.'

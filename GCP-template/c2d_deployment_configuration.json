@@ -1,0 +1,7 @@
+{
+  "defaultDeploymentType": "MULTI_VM",
+  "templateName": "hibuzzer",
+  "projectId": "hibuzzer-product",
+  "imageName": "manager-image",
+  "useSolutionPackage": true
+}

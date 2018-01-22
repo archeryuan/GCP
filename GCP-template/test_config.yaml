@@ -1,0 +1,47 @@
+# Copyright 2014 Google Inc. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+#
+# test_config.yaml
+#
+# Deployment Manager template for running MongoDB on a cluster of servers.
+#
+# The MongoDB deployment here consists of three separate replica pools:
+#  * Deployment Coordinator
+#  * MongoDB server instances
+#  * MongoDB arbiter instances
+#
+# The Deployment Coordinator exists to provide functionality
+# otherwise unavailable from the Deployment Manager infrastructure.
+# For example Deployment Manager is currently unable to
+# monitor the software installation part of a deployment.
+#
+# The MongoDB server instances are the data-bearing instances.
+# The MongoDB arbiter instances are NOT data-bearing instances.
+#
+# A common MongoDB replicaset deployment will have three instances:
+#  * Two data-bearing instances to serve as a primary and secondary
+#  * One arbiter instance to vote in primary elections
+#
+
+imports:
+- name: path_utils.jinja
+  path: common/path_utils.jinja
+- path: hibuzzer.jinja
+
+resources:
+- name: ListenOn
+  type: hibuzzer.jinja
+  properties:
+    network: default
